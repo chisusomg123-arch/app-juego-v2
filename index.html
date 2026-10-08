@@ -1,0 +1,2404 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BattleWord Education</title>
+
+<style>
+/* =========================================================
+   BATTLEWORD EDUCATION
+   TODO EL DISEÑO ESTÁ EN ESTE ARCHIVO
+========================================================= */
+
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+body{
+    font-family:Arial, Helvetica, sans-serif;
+    background:#07101b;
+    color:#eee;
+    overflow:hidden;
+}
+
+button{
+    font-family:inherit;
+    cursor:pointer;
+}
+
+/* ---------- FONDO ---------- */
+
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:
+        linear-gradient(rgba(5,13,23,.88),rgba(5,13,23,.95)),
+        radial-gradient(circle at 50% 30%,#253c51 0%,#07101b 65%);
+    z-index:-2;
+}
+
+body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    opacity:.08;
+    background-image:
+        linear-gradient(45deg,#fff 1px,transparent 1px),
+        linear-gradient(-45deg,#fff 1px,transparent 1px);
+    background-size:30px 30px;
+    z-index:-1;
+}
+
+/* ---------- PANTALLAS ---------- */
+
+.screen{
+    display:none;
+    width:100vw;
+    height:100vh;
+    position:relative;
+}
+
+.screen.active{
+    display:flex;
+}
+
+/* =========================================================
+   MENU PRINCIPAL
+========================================================= */
+
+#menu{
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+}
+
+.menu-container{
+    width:min(900px,92%);
+    padding:45px;
+}
+
+.logo{
+    font-size:clamp(45px,8vw,90px);
+    font-weight:900;
+    letter-spacing:5px;
+    color:#e5bd5b;
+    text-shadow:
+        0 0 10px #a67c24,
+        4px 4px 0 #202020;
+}
+
+.subtitle{
+    margin-top:10px;
+    font-size:20px;
+    color:#c7d0d8;
+    letter-spacing:4px;
+}
+
+.divider{
+    width:220px;
+    height:3px;
+    background:#d2a846;
+    margin:30px auto;
+}
+
+.menu-description{
+    max-width:650px;
+    margin:auto;
+    color:#aab6c1;
+    line-height:1.7;
+}
+
+.main-button{
+    margin-top:35px;
+    padding:18px 50px;
+    border:2px solid #d8b14c;
+    background:linear-gradient(#4a3a1c,#20190c);
+    color:#f4d47b;
+    font-size:18px;
+    font-weight:bold;
+    letter-spacing:2px;
+    transition:.25s;
+}
+
+.main-button:hover{
+    transform:scale(1.05);
+    box-shadow:0 0 25px #c59a39;
+}
+
+.version{
+    margin-top:25px;
+    color:#65727d;
+    font-size:12px;
+}
+
+/* =========================================================
+   CARGA
+========================================================= */
+
+#loading{
+    align-items:center;
+    justify-content:center;
+}
+
+.loading-box{
+    width:min(600px,90%);
+    text-align:center;
+}
+
+.loading-title{
+    font-size:28px;
+    color:#e1bd62;
+    margin-bottom:35px;
+}
+
+.loading-bar{
+    height:24px;
+    border:2px solid #92712c;
+    background:#101923;
+    padding:3px;
+}
+
+.loading-progress{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,#856522,#e4c265);
+    transition:.1s;
+}
+
+.loading-percent{
+    margin-top:12px;
+    color:#c5cdd5;
+}
+
+/* =========================================================
+   SELECCION DE BANDO
+========================================================= */
+
+#factions{
+    align-items:center;
+    justify-content:center;
+    overflow:auto;
+}
+
+.faction-container{
+    width:min(1100px,94%);
+    text-align:center;
+}
+
+.section-title{
+    font-size:38px;
+    color:#e4bf63;
+    margin-bottom:8px;
+}
+
+.section-subtitle{
+    color:#84919d;
+    margin-bottom:35px;
+}
+
+.factions{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:25px;
+}
+
+.faction-card{
+    min-height:330px;
+    border:2px solid #394b5a;
+    background:linear-gradient(145deg,#111d29,#0b141e);
+    padding:35px;
+    transition:.3s;
+    position:relative;
+    overflow:hidden;
+}
+
+.faction-card:hover{
+    transform:translateY(-6px);
+    border-color:#c7a449;
+}
+
+.faction-card.selected{
+    border-color:#e1bc58;
+    box-shadow:0 0 35px rgba(225,188,88,.25);
+}
+
+.faction-icon{
+    font-size:75px;
+    margin-bottom:20px;
+}
+
+.faction-card h2{
+    color:#e3c366;
+    margin-bottom:15px;
+}
+
+.faction-card p{
+    color:#9ba8b3;
+    line-height:1.6;
+}
+
+.select-label{
+    display:none;
+    position:absolute;
+    top:15px;
+    right:15px;
+    color:#e8c866;
+    font-size:12px;
+}
+
+.faction-card.selected .select-label{
+    display:block;
+}
+
+.continue-button{
+    margin-top:30px;
+    padding:15px 40px;
+    background:#b38a32;
+    border:0;
+    color:white;
+    font-weight:bold;
+    font-size:16px;
+}
+
+.continue-button:disabled{
+    opacity:.3;
+    cursor:not-allowed;
+}
+
+/* =========================================================
+   MAPA
+========================================================= */
+
+#map{
+    flex-direction:column;
+}
+
+.topbar{
+    height:75px;
+    background:#0b151f;
+    border-bottom:2px solid #394a57;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 25px;
+}
+
+.top-logo{
+    color:#e2bd5b;
+    font-weight:900;
+    letter-spacing:2px;
+}
+
+.resources{
+    display:flex;
+    gap:15px;
+}
+
+.resource{
+    min-width:115px;
+    padding:9px 14px;
+    background:#111e2a;
+    border:1px solid #354653;
+}
+
+.resource small{
+    display:block;
+    color:#778591;
+}
+
+.resource strong{
+    color:#e0bf65;
+}
+
+.game-layout{
+    flex:1;
+    display:grid;
+    grid-template-columns:260px 1fr 280px;
+    min-height:0;
+}
+
+/* ---------- PANEL IZQUIERDO ---------- */
+
+.side-panel{
+    background:#0a141e;
+    border-right:1px solid #334652;
+    padding:20px;
+    overflow:auto;
+}
+
+.right-panel{
+    border-left:1px solid #334652;
+    border-right:0;
+}
+
+.commander{
+    text-align:center;
+    padding-bottom:20px;
+    border-bottom:1px solid #263945;
+}
+
+.commander-avatar{
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    background:#192b38;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:50px;
+    margin:0 auto 12px;
+    border:2px solid #ae8b3d;
+}
+
+.commander h3{
+    color:#e0bd61;
+}
+
+.stat-box{
+    margin-top:20px;
+}
+
+.stat-row{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:7px;
+    color:#9da9b3;
+}
+
+.stat-row strong{
+    color:#eee;
+}
+
+.stat-bar{
+    height:8px;
+    background:#1c2933;
+    margin-bottom:18px;
+}
+
+.stat-fill{
+    width:50%;
+    height:100%;
+    background:#b99543;
+    transition:.4s;
+}
+
+/* ---------- MAPA CENTRAL ---------- */
+
+.map-area{
+    position:relative;
+    overflow:hidden;
+    background:
+        radial-gradient(circle,#243d4b 0%,#10222e 45%,#07131e 100%);
+}
+
+.map-title{
+    position:absolute;
+    top:20px;
+    left:50%;
+    transform:translateX(-50%);
+    text-align:center;
+    z-index:5;
+}
+
+.map-title h2{
+    color:#e2bf66;
+    letter-spacing:3px;
+}
+
+.map-title p{
+    color:#8797a3;
+    font-size:13px;
+}
+
+.map{
+    position:absolute;
+    inset:80px 30px 40px;
+}
+
+/* mapa decorativo */
+
+.map-grid{
+    position:absolute;
+    inset:0;
+    opacity:.12;
+    background-image:
+        linear-gradient(#fff 1px,transparent 1px),
+        linear-gradient(90deg,#fff 1px,transparent 1px);
+    background-size:45px 45px;
+}
+
+.territory{
+    position:absolute;
+    width:105px;
+    height:70px;
+    border:2px solid #657582;
+    background:#203544;
+    transform:rotate(-5deg);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    color:#cbd3d9;
+    font-size:12px;
+    font-weight:bold;
+    transition:.3s;
+    cursor:pointer;
+    clip-path:polygon(
+        10% 10%,90% 5%,100% 60%,
+        80% 100%,20% 90%,0 45%
+    );
+}
+
+.territory:hover{
+    transform:rotate(-5deg) scale(1.12);
+    z-index:10;
+}
+
+.territory.controlled{
+    background:#365e4c;
+    border-color:#8bc19d;
+}
+
+.territory.enemy{
+    background:#633c3c;
+    border-color:#c88c8c;
+}
+
+.territory.disputed{
+    background:#4e4930;
+    border-color:#c3ad64;
+}
+
+.t1{left:7%;top:25%}
+.t2{left:22%;top:15%}
+.t3{left:38%;top:23%}
+.t4{left:54%;top:12%}
+.t5{left:70%;top:28%}
+.t6{left:15%;top:47%}
+.t7{left:32%;top:50%}
+.t8{left:50%;top:43%}
+.t9{left:67%;top:54%}
+.t10{left:80%;top:70%}
+.t11{left:37%;top:70%}
+.t12{left:18%;top:70%}
+
+.map-tip{
+    position:absolute;
+    bottom:12px;
+    left:50%;
+    transform:translateX(-50%);
+    background:#0b151e;
+    border:1px solid #455967;
+    padding:10px 20px;
+    color:#8d9ba5;
+    font-size:12px;
+}
+
+/* ---------- BOTONES MAPA ---------- */
+
+.map-actions{
+    position:absolute;
+    bottom:20px;
+    left:50%;
+    transform:translateX(-50%);
+    display:flex;
+    gap:12px;
+    z-index:20;
+}
+
+.action-button{
+    padding:13px 22px;
+    background:#9d7b32;
+    color:white;
+    border:1px solid #d7b85c;
+    font-weight:bold;
+}
+
+.action-button.secondary{
+    background:#162532;
+}
+
+/* =========================================================
+   QUIZ
+========================================================= */
+
+#quiz,
+#result,
+#final{
+    align-items:center;
+    justify-content:center;
+    overflow:auto;
+}
+
+.quiz-container{
+    width:min(850px,92%);
+}
+
+.quiz-header{
+    display:flex;
+    justify-content:space-between;
+    color:#9aa7b0;
+    margin-bottom:15px;
+}
+
+.quiz-card{
+    background:linear-gradient(145deg,#111e29,#0b151f);
+    border:2px solid #3e5360;
+    padding:35px;
+    box-shadow:0 20px 60px rgba(0,0,0,.4);
+}
+
+.quiz-year{
+    color:#d7b75b;
+    font-size:20px;
+    font-weight:bold;
+}
+
+.quiz-question{
+    font-size:25px;
+    line-height:1.4;
+    margin:20px 0 30px;
+}
+
+.options{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:15px;
+}
+
+.option{
+    padding:18px;
+    text-align:left;
+    background:#142330;
+    border:1px solid #3d5361;
+    color:#dce2e6;
+    transition:.2s;
+}
+
+.option:hover{
+    background:#1d3443;
+    border-color:#d0ad50;
+    transform:translateX(4px);
+}
+
+/* =========================================================
+   RESULTADO
+========================================================= */
+
+.result-box{
+    width:min(700px,90%);
+    text-align:center;
+    background:#0e1a24;
+    border:2px solid #536573;
+    padding:45px;
+}
+
+.result-icon{
+    font-size:70px;
+    margin-bottom:20px;
+}
+
+#result-title{
+    color:#e4c267;
+    font-size:34px;
+}
+
+.result-points{
+    margin:15px;
+    color:#9db0bd;
+}
+
+.explanation{
+    color:#adb9c2;
+    line-height:1.6;
+    background:#101f2a;
+    padding:20px;
+    margin:25px 0;
+}
+
+.next-button{
+    padding:14px 35px;
+    background:#ad8838;
+    color:#fff;
+    border:0;
+    font-weight:bold;
+}
+
+/* =========================================================
+   LOGROS
+========================================================= */
+
+.achievement{
+    margin-top:18px;
+    padding:13px;
+    border:1px solid #2c3c48;
+    background:#101c26;
+    opacity:.45;
+}
+
+.achievement.unlocked{
+    opacity:1;
+    border-color:#c4a34e;
+}
+
+.achievement-title{
+    color:#d4b35d;
+    font-weight:bold;
+}
+
+.achievement p{
+    font-size:11px;
+    color:#7f8c96;
+    margin-top:5px;
+}
+
+/* =========================================================
+   FINAL
+========================================================= */
+
+.final-box{
+    width:min(750px,92%);
+    text-align:center;
+    background:#0c1822;
+    border:2px solid #a7873c;
+    padding:50px;
+}
+
+.final-flag{
+    font-size:80px;
+}
+
+.final-title{
+    font-size:50px;
+    color:#e6c463;
+    margin:20px 0;
+}
+
+.final-message{
+    color:#aab7c0;
+    line-height:1.6;
+}
+
+.final-stats{
+    display:flex;
+    justify-content:center;
+    gap:40px;
+    margin:30px 0;
+}
+
+.final-stat strong{
+    display:block;
+    font-size:30px;
+    color:#e3c064;
+}
+
+.final-stat span{
+    color:#7d8b96;
+    font-size:12px;
+}
+
+/* =========================================================
+   NOTIFICACION
+========================================================= */
+
+.notification{
+    position:fixed;
+    top:90px;
+    right:25px;
+    background:#101e29;
+    border:1px solid #c1a04b;
+    padding:15px 20px;
+    max-width:280px;
+    transform:translateX(400px);
+    transition:.4s;
+    z-index:100;
+}
+
+.notification.show{
+    transform:translateX(0);
+}
+
+.notification strong{
+    color:#e1bf62;
+}
+
+@media(max-width:900px){
+
+    body{
+        overflow:auto;
+    }
+
+    .game-layout{
+        grid-template-columns:1fr;
+    }
+
+    .side-panel{
+        display:none;
+    }
+
+    .right-panel{
+        display:none;
+    }
+
+    .factions{
+        grid-template-columns:1fr;
+    }
+
+    .options{
+        grid-template-columns:1fr;
+    }
+
+    .topbar{
+        overflow-x:auto;
+    }
+
+    .resources{
+        gap:5px;
+    }
+
+    .resource{
+        min-width:80px;
+    }
+
+    .territory{
+        width:75px;
+        height:55px;
+        font-size:9px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- =====================================================
+     MENU
+===================================================== -->
+
+<section id="menu" class="screen active">
+
+    <div class="menu-container">
+
+        <div class="logo">BATTLEWORD</div>
+
+        <div class="subtitle">
+            EDUCATION
+        </div>
+
+        <div class="divider"></div>
+
+        <p class="menu-description">
+            Vive la historia de la Independencia de las Trece Colonias.
+            Dirige tropas, conquista territorios, administra recursos
+            y demuestra tus conocimientos históricos para cambiar
+            el curso de la guerra.
+        </p>
+
+        <button class="main-button" onclick="startGame()">
+            ▶ INICIAR CAMPAÑA
+        </button>
+
+        <div class="version">
+            CAMPAÑA HISTÓRICA • 1773 — 1783
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     CARGA
+===================================================== -->
+
+<section id="loading" class="screen">
+
+    <div class="loading-box">
+
+        <div class="loading-title">
+            PREPARANDO CAMPAÑA...
+        </div>
+
+        <div class="loading-bar">
+            <div id="loadingProgress" class="loading-progress"></div>
+        </div>
+
+        <div id="loadingPercent" class="loading-percent">
+            0%
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     SELECCION DE BANDO
+===================================================== -->
+
+<section id="factions" class="screen">
+
+    <div class="faction-container">
+
+        <h1 class="section-title">
+            ELIGE TU BANDO
+        </h1>
+
+        <p class="section-subtitle">
+            Tu conocimiento será tu arma.
+        </p>
+
+        <div class="factions">
+
+            <div
+                id="coloniesCard"
+                class="faction-card"
+                onclick="selectFaction('colonies')"
+            >
+
+                <div class="select-label">
+                    ✓ SELECCIONADO
+                </div>
+
+                <div class="faction-icon">🇺🇸</div>
+
+                <h2>TRECE COLONIAS</h2>
+
+                <p>
+                    Lidera la rebelión colonial y lucha
+                    por la independencia frente al poder
+                    británico.
+                </p>
+
+            </div>
+
+
+            <div
+                id="britainCard"
+                class="faction-card"
+                onclick="selectFaction('britain')"
+            >
+
+                <div class="select-label">
+                    ✓ SELECCIONADO
+                </div>
+
+                <div class="faction-icon">🇬🇧</div>
+
+                <h2>REINO UNIDO</h2>
+
+                <p>
+                    Defiende el dominio de la Corona,
+                    controla las colonias y detén
+                    la rebelión.
+                </p>
+
+            </div>
+
+        </div>
+
+        <button
+            id="factionContinue"
+            class="continue-button"
+            disabled
+            onclick="enterMap()"
+        >
+            CONTINUAR
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     MAPA PRINCIPAL
+===================================================== -->
+
+<section id="map" class="screen">
+
+    <div class="topbar">
+
+        <div class="top-logo">
+            BATTLEWORD
+        </div>
+
+        <div class="resources">
+
+            <div class="resource">
+                <small>PUNTOS</small>
+                <strong id="score">0</strong>
+            </div>
+
+            <div class="resource">
+                <small>RECURSOS</small>
+                <strong id="resources">100</strong>
+            </div>
+
+            <div class="resource">
+                <small>APOYO</small>
+                <strong id="support">50%</strong>
+            </div>
+
+            <div class="resource">
+                <small>AÑO</small>
+                <strong id="year">1773</strong>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="game-layout">
+
+        <!-- PANEL IZQUIERDO -->
+
+        <aside class="side-panel">
+
+            <div class="commander">
+
+                <div id="commanderAvatar" class="commander-avatar">
+                    ⚔️
+                </div>
+
+                <h3 id="commanderName">
+                    George Washington
+                </h3>
+
+                <p id="factionName">
+                    Trece Colonias
+                </p>
+
+            </div>
+
+
+            <div class="stat-box">
+
+                <div class="stat-row">
+                    <span>Apoyo popular</span>
+                    <strong id="supportText">50%</strong>
+                </div>
+
+                <div class="stat-bar">
+                    <div
+                        id="supportBar"
+                        class="stat-fill"
+                    ></div>
+                </div>
+
+
+                <div class="stat-row">
+                    <span>Recursos</span>
+                    <strong id="resourceText">100</strong>
+                </div>
+
+                <div class="stat-bar">
+                    <div
+                        id="resourceBar"
+                        class="stat-fill"
+                    ></div>
+                </div>
+
+            </div>
+
+        </aside>
+
+
+        <!-- MAPA -->
+
+        <main class="map-area">
+
+            <div class="map-title">
+
+                <h2>MAPA ESTRATÉGICO</h2>
+
+                <p>
+                    Selecciona territorios y responde
+                    preguntas históricas.
+                </p>
+
+            </div>
+
+
+            <div class="map">
+
+                <div class="map-grid"></div>
+
+                <div class="territory t1" onclick="selectTerritory('Boston')">
+                    BOSTON
+                </div>
+
+                <div class="territory t2" onclick="selectTerritory('Nueva York')">
+                    NUEVA YORK
+                </div>
+
+                <div class="territory t3" onclick="selectTerritory('Filadelfia')">
+                    FILADELFIA
+                </div>
+
+                <div class="territory t4" onclick="selectTerritory('Nueva Jersey')">
+                    N. JERSEY
+                </div>
+
+                <div class="territory t5" onclick="selectTerritory('Virginia')">
+                    VIRGINIA
+                </div>
+
+                <div class="territory t6" onclick="selectTerritory('Pensilvania')">
+                    PENSILVANIA
+                </div>
+
+                <div class="territory t7" onclick="selectTerritory('Maryland')">
+                    MARYLAND
+                </div>
+
+                <div class="territory t8" onclick="selectTerritory('Carolina')">
+                    CAROLINA
+                </div>
+
+                <div class="territory t9" onclick="selectTerritory('Georgia')">
+                    GEORGIA
+                </div>
+
+                <div class="territory t10" onclick="selectTerritory('Charleston')">
+                    CHARLESTON
+                </div>
+
+                <div class="territory t11" onclick="selectTerritory('Yorktown')">
+                    YORKTOWN
+                </div>
+
+                <div class="territory t12" onclick="selectTerritory('Delaware')">
+                    DELAWARE
+                </div>
+
+            </div>
+
+
+            <div class="map-actions">
+
+                <button
+                    class="action-button"
+                    onclick="startBattle()"
+                >
+                    ⚔️ INICIAR DECISIÓN
+                </button>
+
+                <button
+                    class="action-button secondary"
+                    onclick="showAchievements()"
+                >
+                    🏆 LOGROS
+                </button>
+
+            </div>
+
+
+            <div id="mapTip" class="map-tip">
+                Selecciona un territorio para comenzar.
+            </div>
+
+        </main>
+
+
+        <!-- PANEL DERECHO -->
+
+        <aside class="side-panel right-panel">
+
+            <h3 style="color:#dfbd61;">
+                REGISTRO DE CAMPAÑA
+            </h3>
+
+            <div id="eventLog"
+                 style="margin-top:15px;color:#8796a1;line-height:1.6;">
+                La campaña está lista.
+            </div>
+
+
+            <div style="margin-top:30px;">
+
+                <h3 style="color:#dfbd61;">
+                    TERRITORIOS
+                </h3>
+
+                <div class="stat-row" style="margin-top:15px;">
+                    <span>Controlados</span>
+                    <strong id="controlled">0</strong>
+                </div>
+
+                <div class="stat-row">
+                    <span>Perdidos</span>
+                    <strong id="lost">0</strong>
+                </div>
+
+            </div>
+
+
+            <div style="margin-top:30px;">
+
+                <h3 style="color:#dfbd61;">
+                    OBJETIVO
+                </h3>
+
+                <p style="color:#83919c;line-height:1.6;margin-top:10px;">
+                    Responde correctamente las preguntas
+                    para conquistar territorios y obtener
+                    recursos.
+                </p>
+
+            </div>
+
+        </aside>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     QUIZ
+===================================================== -->
+
+<section id="quiz" class="screen">
+
+    <div class="quiz-container">
+
+        <div class="quiz-header">
+
+            <span>
+                DECISIÓN HISTÓRICA
+            </span>
+
+            <span id="questionNumber">
+                1 / 6
+            </span>
+
+        </div>
+
+
+        <div class="quiz-card">
+
+            <div id="quizYear" class="quiz-year">
+                1773
+            </div>
+
+            <div id="quizQuestion" class="quiz-question">
+                Pregunta
+            </div>
+
+            <div id="options" class="options"></div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     RESULTADO
+===================================================== -->
+
+<section id="result" class="screen">
+
+    <div class="result-box">
+
+        <div id="resultIcon" class="result-icon">
+            ⭐
+        </div>
+
+        <h1 id="resultTitle">
+            ¡DECISIÓN CORRECTA!
+        </h1>
+
+        <p id="resultPoints" class="result-points">
+            +100 PUNTOS
+        </p>
+
+        <div id="explanation" class="explanation">
+            Explicación histórica.
+        </div>
+
+        <button
+            class="next-button"
+            onclick="continueAfterResult()"
+        >
+            CONTINUAR
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     FINAL
+===================================================== -->
+
+<section id="final" class="screen">
+
+    <div class="final-box">
+
+        <div id="finalFlag" class="final-flag">
+            🇺🇸
+        </div>
+
+        <h1 id="finalTitle" class="final-title">
+            ¡VICTORIA!
+        </h1>
+
+        <p id="finalMessage" class="final-message">
+            Has completado la campaña.
+        </p>
+
+
+        <div class="final-stats">
+
+            <div class="final-stat">
+                <strong id="finalScore">0</strong>
+                <span>PUNTOS</span>
+            </div>
+
+            <div class="final-stat">
+                <strong id="finalTerritories">0</strong>
+                <span>TERRITORIOS</span>
+            </div>
+
+            <div class="final-stat">
+                <strong id="finalSupport">0%</strong>
+                <span>APOYO</span>
+            </div>
+
+        </div>
+
+
+        <button
+            class="main-button"
+            onclick="restartGame()"
+        >
+            ↻ JUGAR DE NUEVO
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- =====================================================
+     NOTIFICACIÓN
+===================================================== -->
+
+<div id="notification" class="notification">
+
+    <strong id="notificationTitle">
+        LOGRO
+    </strong>
+
+    <p id="notificationText">
+        Has desbloqueado un logro.
+    </p>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   ESTADO DEL JUEGO
+========================================================= */
+
+const game = {
+
+    screen: "menu",
+
+    faction: null,
+
+    score: 0,
+
+    resources: 100,
+
+    support: 50,
+
+    year: 1773,
+
+    territory: null,
+
+    controlled: 0,
+
+    lost: 0,
+
+    question: 0,
+
+    correctStreak: 0,
+
+    achievements: [],
+
+    questions: []
+
+};
+
+
+/* =========================================================
+   BANCO DE PREGUNTAS
+========================================================= */
+
+const colonialQuestions = [
+
+    {
+        year:1773,
+
+        question:
+        "¿Qué protesta contra los impuestos británicos al té ocurrió en Boston en diciembre de 1773?",
+
+        options:[
+            "A. Motín del Té de Boston",
+            "B. Masacre de Boston",
+            "C. Batalla de Yorktown",
+            "D. Congreso Continental"
+        ],
+
+        correct:0,
+
+        explanation:
+        "El Motín del Té de Boston ocurrió en diciembre de 1773, cuando colonos protestaron contra las políticas británicas relacionadas con el té."
+    },
+
+
+    {
+        year:1775,
+
+        question:
+        "¿Qué enfrentamientos de abril de 1775 marcaron el comienzo de la guerra?",
+
+        options:[
+            "A. Lexington y Concord",
+            "B. Yorktown",
+            "C. Saratoga",
+            "D. Monmouth"
+        ],
+
+        correct:0,
+
+        explanation:
+        "Las batallas de Lexington y Concord, en Massachusetts, marcaron el comienzo de los enfrentamientos armados de la Guerra de Independencia."
+    },
+
+
+    {
+        year:1776,
+
+        question:
+        "¿Qué documento declaró la independencia de las Trece Colonias?",
+
+        options:[
+            "A. Declaración de Independencia",
+            "B. Tratado de París",
+            "C. Constitución",
+            "D. Ley del Timbre"
+        ],
+
+        correct:0,
+
+        explanation:
+        "La Declaración de Independencia fue adoptada en 1776 y expresó la separación política de las colonias respecto de Gran Bretaña."
+    },
+
+
+    {
+        year:1776,
+
+        question:
+        "¿En qué fecha se celebra tradicionalmente la independencia estadounidense?",
+
+        options:[
+            "A. 4 de julio de 1776",
+            "B. 19 de abril de 1775",
+            "C. 25 de diciembre de 1776",
+            "D. 3 de septiembre de 1783"
+        ],
+
+        correct:0,
+
+        explanation:
+        "El 4 de julio de 1776 corresponde a la adopción de la Declaración de Independencia."
+    },
+
+
+    {
+        year:1777,
+
+        question:
+        "¿Qué victoria estadounidense fue especialmente importante para conseguir apoyo francés?",
+
+        options:[
+            "A. Saratoga",
+            "B. Bunker Hill",
+            "C. Long Island",
+            "D. Charleston"
+        ],
+
+        correct:0,
+
+        explanation:
+        "La victoria estadounidense en Saratoga en 1777 fue decisiva para fortalecer la causa revolucionaria y favorecer la alianza con Francia."
+    },
+
+
+    {
+        year:1781,
+
+        question:
+        "¿Qué batalla de 1781 fue decisiva para el final de la guerra?",
+
+        options:[
+            "A. Yorktown",
+            "B. Trenton",
+            "C. Princeton",
+            "D. Brandywine"
+        ],
+
+        correct:0,
+
+        explanation:
+        "La campaña de Yorktown terminó con la rendición de Cornwallis y fue decisiva para el desenlace de la guerra."
+    }
+
+];
+
+
+const britishQuestions = [
+
+    {
+        year:1774,
+
+        question:
+        "¿Qué leyes británicas buscaron castigar a Massachusetts después del Motín del Té?",
+
+        options:[
+            "A. Leyes Coercitivas",
+            "B. Ley del Timbre",
+            "C. Tratado de París",
+            "D. Ley del Té"
+        ],
+
+        correct:0,
+
+        explanation:
+        "Las Leyes Coercitivas fueron aprobadas por el Parlamento británico como respuesta a la resistencia colonial."
+    },
+
+
+    {
+        year:1775,
+
+        question:
+        "¿Qué batalla de 1775 terminó con una victoria británica pero enormes pérdidas?",
+
+        options:[
+            "A. Bunker Hill",
+            "B. Yorktown",
+            "C. Saratoga",
+            "D. Trenton"
+        ],
+
+        correct:0,
+
+        explanation:
+        "En Bunker Hill las fuerzas británicas tomaron la posición, pero sufrieron numerosas bajas."
+    },
+
+
+    {
+        year:1776,
+
+        question:
+        "¿Qué ciudad fue un importante objetivo británico durante la campaña de 1776?",
+
+        options:[
+            "A. Nueva York",
+            "B. Boston",
+            "C. Yorktown",
+            "D. Richmond"
+        ],
+
+        correct:0,
+
+        explanation:
+        "Nueva York fue un objetivo estratégico fundamental para las fuerzas británicas."
+    },
+
+
+    {
+        year:1777,
+
+        question:
+        "¿Qué ciudad fue ocupada por los británicos en 1777?",
+
+        options:[
+            "A. Filadelfia",
+            "B. Boston",
+            "C. Baltimore",
+            "D. Richmond"
+        ],
+
+        correct:0,
+
+        explanation:
+        "Las fuerzas británicas ocuparon Filadelfia durante parte de la campaña de 1777."
+    },
+
+
+    {
+        year:1780,
+
+        question:
+        "¿Qué importante ciudad del sur cayó ante las fuerzas británicas en 1780?",
+
+        options:[
+            "A. Charleston",
+            "B. Providence",
+            "C. Boston",
+            "D. Trenton"
+        ],
+
+        correct:0,
+
+        explanation:
+        "Charleston cayó ante los británicos en mayo de 1780 y se convirtió en una importante victoria británica en el sur."
+    },
+
+
+    {
+        year:1783,
+
+        question:
+        "¿Qué tratado puso fin formalmente a la Guerra de Independencia?",
+
+        options:[
+            "A. Tratado de París",
+            "B. Tratado de Versalles de 1919",
+            "C. Tratado de Gante",
+            "D. Tratado de Utrecht"
+        ],
+
+        correct:0,
+
+        explanation:
+        "El Tratado de París de 1783 puso fin formalmente al conflicto y reconoció la independencia de Estados Unidos."
+    }
+
+];
+
+
+/* =========================================================
+   FUNCIONES GENERALES
+========================================================= */
+
+function showScreen(id){
+
+    document
+        .querySelectorAll(".screen")
+        .forEach(screen=>{
+            screen.classList.remove("active");
+        });
+
+    document
+        .getElementById(id)
+        .classList.add("active");
+
+    game.screen=id;
+}
+
+
+/* =========================================================
+   INICIAR JUEGO
+========================================================= */
+
+function startGame(){
+
+    showScreen("loading");
+
+    let progress=0;
+
+    const interval=setInterval(()=>{
+
+        progress+=5;
+
+        document
+            .getElementById("loadingProgress")
+            .style.width=progress+"%";
+
+        document
+            .getElementById("loadingPercent")
+            .textContent=progress+"%";
+
+        if(progress>=100){
+
+            clearInterval(interval);
+
+            setTimeout(()=>{
+                showScreen("factions");
+            },300);
+
+        }
+
+    },50);
+
+}
+
+
+/* =========================================================
+   SELECCIONAR BANDO
+========================================================= */
+
+function selectFaction(faction){
+
+    game.faction=faction;
+
+    document
+        .getElementById("coloniesCard")
+        .classList.remove("selected");
+
+    document
+        .getElementById("britainCard")
+        .classList.remove("selected");
+
+
+    if(faction==="colonies"){
+
+        document
+            .getElementById("coloniesCard")
+            .classList.add("selected");
+
+    }else{
+
+        document
+            .getElementById("britainCard")
+            .classList.add("selected");
+
+    }
+
+
+    document
+        .getElementById("factionContinue")
+        .disabled=false;
+
+}
+
+
+/* =========================================================
+   ENTRAR AL MAPA
+========================================================= */
+
+function enterMap(){
+
+    if(!game.faction) return;
+
+
+    if(game.faction==="colonies"){
+
+        game.questions=[
+            ...colonialQuestions
+        ];
+
+        document
+            .getElementById("commanderAvatar")
+            .textContent="⚔️";
+
+        document
+            .getElementById("commanderName")
+            .textContent="George Washington";
+
+        document
+            .getElementById("factionName")
+            .textContent="Trece Colonias";
+
+    }else{
+
+        game.questions=[
+            ...britishQuestions
+        ];
+
+        document
+            .getElementById("commanderAvatar")
+            .textContent="🎖️";
+
+        document
+            .getElementById("commanderName")
+            .textContent="William Howe";
+
+        document
+            .getElementById("factionName")
+            .textContent="Reino Unido";
+
+    }
+
+
+    updateHUD();
+
+    showScreen("map");
+
+    notify(
+        "CAMPAÑA INICIADA",
+        "Selecciona un territorio y toma una decisión."
+    );
+
+}
+
+
+/* =========================================================
+   SELECCIONAR TERRITORIO
+========================================================= */
+
+function selectTerritory(name){
+
+    game.territory=name;
+
+    document
+        .getElementById("mapTip")
+        .textContent=
+        "Territorio seleccionado: "+name;
+
+    notify(
+        "TERRITORIO",
+        name+" ha sido seleccionado."
+    );
+
+}
+
+
+/* =========================================================
+   COMENZAR BATALLA
+========================================================= */
+
+function startBattle(){
+
+    if(!game.territory){
+
+        notify(
+            "SELECCIONA UN TERRITORIO",
+            "Primero selecciona una región del mapa."
+        );
+
+        return;
+    }
+
+
+    if(game.question>=game.questions.length){
+
+        finishGame();
+
+        return;
+    }
+
+
+    loadQuestion();
+
+}
+
+
+/* =========================================================
+   CARGAR PREGUNTA
+========================================================= */
+
+function loadQuestion(){
+
+    const q=game.questions[game.question];
+
+    document
+        .getElementById("quizYear")
+        .textContent=q.year;
+
+
+    document
+        .getElementById("quizQuestion")
+        .textContent=q.question;
+
+
+    document
+        .getElementById("questionNumber")
+        .textContent=
+        (game.question+1)+" / "+game.questions.length;
+
+
+    const options=
+        document.getElementById("options");
+
+    options.innerHTML="";
+
+
+    q.options.forEach((option,index)=>{
+
+        const button=
+            document.createElement("button");
+
+        button.className="option";
+
+        button.textContent=option;
+
+        button.onclick=()=>{
+            answerQuestion(index);
+        };
+
+        options.appendChild(button);
+
+    });
+
+
+    showScreen("quiz");
+
+}
+
+
+/* =========================================================
+   RESPONDER
+========================================================= */
+
+function answerQuestion(answer){
+
+    const q=game.questions[game.question];
+
+    const correct=
+        answer===q.correct;
+
+
+    if(correct){
+
+        game.score+=100;
+
+        game.resources+=20;
+
+        game.support=
+            Math.min(100,game.support+8);
+
+        game.controlled++;
+
+        game.correctStreak++;
+
+
+        document
+            .getElementById("resultIcon")
+            .textContent="⭐";
+
+        document
+            .getElementById("resultTitle")
+            .textContent=
+            "¡DECISIÓN CORRECTA!";
+
+        document
+            .getElementById("resultPoints")
+            .textContent=
+            "+100 PUNTOS • +20 RECURSOS";
+
+
+        if(game.territory){
+
+            const territories=
+                document.querySelectorAll(".territory");
+
+            territories.forEach(t=>{
+
+                if(
+                    t.textContent.trim()===
+                    game.territory
+                ){
+
+                    t.classList.remove(
+                        "disputed",
+                        "enemy"
+                    );
+
+                    t.classList.add(
+                        "controlled"
+                    );
+
+                }
+
+            });
+
+        }
+
+
+        document
+            .getElementById("eventLog")
+            .innerHTML=
+            "<b style='color:#b9d5bd'>VICTORIA TÁCTICA</b><br>"+
+            "Has asegurado "+game.territory+".";
+
+
+        checkAchievements();
+
+
+    }else{
+
+        game.resources=
+            Math.max(0,game.resources-15);
+
+        game.support=
+            Math.max(0,game.support-7);
+
+        game.lost++;
+
+        game.correctStreak=0;
+
+
+        document
+            .getElementById("resultIcon")
+            .textContent="✕";
+
+        document
+            .getElementById("resultTitle")
+            .textContent=
+            "FALLO TÁCTICO";
+
+        document
+            .getElementById("resultPoints")
+            .textContent=
+            "-15 RECURSOS • -7% APOYO";
+
+
+        if(game.territory){
+
+            const territories=
+                document.querySelectorAll(".territory");
+
+            territories.forEach(t=>{
+
+                if(
+                    t.textContent.trim()===
+                    game.territory
+                ){
+
+                    t.classList.remove(
+                        "disputed",
+                        "controlled"
+                    );
+
+                    t.classList.add(
+                        "enemy"
+                    );
+
+                }
+
+            });
+
+        }
+
+
+        document
+            .getElementById("eventLog")
+            .innerHTML=
+            "<b style='color:#d29a9a'>DERROTA TÁCTICA</b><br>"+
+            "Has perdido influencia en "+game.territory+".";
+    }
+
+
+    document
+        .getElementById("explanation")
+        .textContent=q.explanation;
+
+
+    updateHUD();
+
+    showScreen("result");
+
+}
+
+
+/* =========================================================
+   CONTINUAR DESPUÉS DE RESULTADO
+========================================================= */
+
+function continueAfterResult(){
+
+    game.question++;
+
+    if(game.question>=game.questions.length){
+
+        finishGame();
+
+    }else{
+
+        showScreen("map");
+
+        document
+            .getElementById("year")
+            .textContent=
+            game.questions[game.question].year;
+
+    }
+
+}
+
+
+/* =========================================================
+   ACTUALIZAR HUD
+========================================================= */
+
+function updateHUD(){
+
+    document
+        .getElementById("score")
+        .textContent=
+        game.score;
+
+
+    document
+        .getElementById("resources")
+        .textContent=
+        game.resources;
+
+
+    document
+        .getElementById("support")
+        .textContent=
+        game.support+"%";
+
+
+    document
+        .getElementById("supportText")
+        .textContent=
+        game.support+"%";
+
+
+    document
+        .getElementById("resourceText")
+        .textContent=
+        game.resources;
+
+
+    document
+        .getElementById("supportBar")
+        .style.width=
+        game.support+"%";
+
+
+    document
+        .getElementById("resourceBar")
+        .style.width=
+        Math.min(100,game.resources/2)+"%";
+
+
+    document
+        .getElementById("controlled")
+        .textContent=
+        game.controlled;
+
+
+    document
+        .getElementById("lost")
+        .textContent=
+        game.lost;
+
+
+    if(game.questions[game.question]){
+
+        document
+            .getElementById("year")
+            .textContent=
+            game.questions[game.question].year;
+
+    }
+
+}
+
+
+/* =========================================================
+   LOGROS
+========================================================= */
+
+function checkAchievements(){
+
+    if(
+        game.correctStreak>=3 &&
+        !game.achievements.includes("experto")
+    ){
+
+        game.achievements.push("experto");
+
+        notify(
+            "🏆 LOGRO DESBLOQUEADO",
+            "Experto histórico: 3 respuestas correctas seguidas."
+        );
+
+    }
+
+
+    if(
+        game.controlled>=3 &&
+        !game.achievements.includes("conquistador")
+    ){
+
+        game.achievements.push("conquistador");
+
+        notify(
+            "🏆 LOGRO DESBLOQUEADO",
+            "Comandante: has controlado 3 territorios."
+        );
+
+    }
+
+
+    if(
+        game.score>=500 &&
+        !game.achievements.includes("estratega")
+    ){
+
+        game.achievements.push("estratega");
+
+        notify(
+            "🏆 LOGRO DESBLOQUEADO",
+            "Gran estratega: has conseguido 500 puntos."
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   MOSTRAR LOGROS
+========================================================= */
+
+function showAchievements(){
+
+    let message="";
+
+    if(game.achievements.length===0){
+
+        message=
+        "Todavía no tienes logros. ¡Responde correctamente para desbloquearlos!";
+
+    }else{
+
+        message=
+        "Logros desbloqueados:<br><br>"+
+        game.achievements
+            .map(a=>"🏆 "+a)
+            .join("<br>");
+
+    }
+
+
+    notify(
+        "LOGROS",
+        message
+    );
+
+}
+
+
+/* =========================================================
+   NOTIFICACIONES
+========================================================= */
+
+let notificationTimer;
+
+
+function notify(title,text){
+
+    const box=
+        document.getElementById("notification");
+
+
+    document
+        .getElementById("notificationTitle")
+        .textContent=
+        title;
+
+
+    document
+        .getElementById("notificationText")
+        .innerHTML=
+        text;
+
+
+    box.classList.add("show");
+
+
+    clearTimeout(notificationTimer);
+
+
+    notificationTimer=
+        setTimeout(()=>{
+
+            box.classList.remove("show");
+
+        },3500);
+
+}
+
+
+/* =========================================================
+   FINAL
+========================================================= */
+
+function finishGame(){
+
+    const victory=
+        game.controlled>=game.lost;
+
+
+    if(victory){
+
+        document
+            .getElementById("finalTitle")
+            .textContent=
+            "¡VICTORIA!";
+
+        document
+            .getElementById("finalMessage")
+            .textContent=
+            "Has dirigido correctamente tu campaña y demostrado tus conocimientos históricos.";
+
+    }else{
+
+        document
+            .getElementById("finalTitle")
+            .textContent=
+            "CAMPAÑA PERDIDA";
+
+        document
+            .getElementById("finalMessage")
+            .textContent=
+            "El enemigo obtuvo ventaja. Estudia las decisiones y vuelve a intentarlo.";
+
+    }
+
+
+    document
+        .getElementById("finalFlag")
+        .textContent=
+        game.faction==="colonies"
+        ? "🇺🇸"
+        : "🇬🇧";
+
+
+    document
+        .getElementById("finalScore")
+        .textContent=
+        game.score;
+
+
+    document
+        .getElementById("finalTerritories")
+        .textContent=
+        game.controlled;
+
+
+    document
+        .getElementById("finalSupport")
+        .textContent=
+        game.support+"%";
+
+
+    showScreen("final");
+
+}
+
+
+/* =========================================================
+   REINICIAR
+========================================================= */
+
+function restartGame(){
+
+    game.screen="menu";
+
+    game.faction=null;
+
+    game.score=0;
+
+    game.resources=100;
+
+    game.support=50;
+
+    game.year=1773;
+
+    game.territory=null;
+
+    game.controlled=0;
+
+    game.lost=0;
+
+    game.question=0;
+
+    game.correctStreak=0;
+
+    game.achievements=[];
+
+    game.questions=[];
+
+
+    document
+        .querySelectorAll(".territory")
+        .forEach(t=>{
+
+            t.classList.remove(
+                "controlled",
+                "enemy"
+            );
+
+            t.classList.add(
+                "disputed"
+            );
+
+        });
+
+
+    document
+        .getElementById("factionContinue")
+        .disabled=true;
+
+
+    document
+        .getElementById("coloniesCard")
+        .classList.remove("selected");
+
+
+    document
+        .getElementById("britainCard")
+        .classList.remove("selected");
+
+
+    document
+        .getElementById("mapTip")
+        .textContent=
+        "Selecciona un territorio para comenzar.";
+
+
+    updateHUD();
+
+    showScreen("menu");
+
+}
+
+
+/* =========================================================
+   INICIALIZAR
+========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    ()=>{
+
+        document
+            .querySelectorAll(".territory")
+            .forEach(t=>{
+                t.classList.add("disputed");
+            });
+
+        updateHUD();
+
+    }
+);
+
+</script>
+
+</body>
+</html>
